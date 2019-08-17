@@ -6,32 +6,76 @@ using System.Text;
 
 namespace HashMap
 {
-    public class HashMap<T, U> : IDictionary<T, U>, ICollection<KeyValuePair<T, U>>, IEnumerable<KeyValuePair<T, U>>, IEnumerable
+    public class HashMap<TKey, TValue> : IDictionary<TKey, TValue>, ICollection<KeyValuePair<TKey, TValue>>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable
     {
-        public LinkedList<KeyValuePair<T, U>>[] collection;
+        public LinkedList<KeyValuePair<TKey, TValue>>[] Collection;
 
-        public U this[T key]
+        private const int defaultCapacity = 10;
+        public IEqualityComparer<TKey> Comparer;
+
+        public HashMap()
+        : this(defaultCapacity, null)
         {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
+
         }
 
-        public ICollection<T> Keys => this.Select(pair => pair.Key).ToList();
+        public HashMap(int capacity)
+            : this(capacity, null)
+        {
 
-        public ICollection<U> Values => this.Select(pair => pair.Value).ToList();
+        }
 
-        public int Count => collection.Length;
+        public HashMap(IEqualityComparer<TKey> comparer)
+            : this(defaultCapacity, null)
+        {
+
+        }
+
+        public HashMap(int capacity, IEqualityComparer<TKey> comparer)
+        {
+            if (capacity < 0)
+            {
+                throw new ArgumentOutOfRangeException("capacity", "Specified argument was below valid capacity. It must be 0 or greater.");
+            }
+
+            this.Count = 0;
+            this.Comparer = comparer ?? EqualityComparer<TKey>.Default;
+            this.Collection = new LinkedList<KeyValuePair<TKey, TValue>>[capacity];
+        }
+
+        public TValue this[TKey key]
+        {
+            get
+            {
+                var pair = GetKeyValuePair(key);
+                return pair.Value;
+            }
+            set
+            {
+
+            }
+        }
+
+        public ICollection<TKey> Keys => this.Select(pair => pair.Key).ToList();
+
+        public ICollection<TValue> Values => this.Select(pair => pair.Value).ToList();
+
+        public int Count { get; private set; }
 
         public bool IsReadOnly => false;
 
-        public void Add(T key, U value)
+        private int Capacity => Collection.Length;
+
+        public void Add(TKey key, TValue value)
         {
-            throw new NotImplementedException();
+            var index = Index(key);
+
+            if (index == null) index = 4;
         }
 
-        public void Add(KeyValuePair<T, U> item)
+        public void Add(KeyValuePair<TKey, TValue> item)
         {
-            throw new NotImplementedException();
+            Add(item.Key, item.Value);
         }
 
         public void Clear()
@@ -39,37 +83,37 @@ namespace HashMap
             throw new NotImplementedException();
         }
 
-        public bool Contains(KeyValuePair<T, U> item)
+        public bool Contains(KeyValuePair<TKey, TValue> item)
         {
             throw new NotImplementedException();
         }
 
-        public bool ContainsKey(T key)
+        public bool ContainsKey(TKey key)
         {
             throw new NotImplementedException();
         }
 
-        public void CopyTo(KeyValuePair<T, U>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerator<KeyValuePair<T, U>> GetEnumerator()
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             throw new NotImplementedException();
         }
 
-        public bool Remove(T key)
+        public bool Remove(TKey key)
         {
             throw new NotImplementedException();
         }
 
-        public bool Remove(KeyValuePair<T, U> item)
+        public bool Remove(KeyValuePair<TKey, TValue> item)
         {
             throw new NotImplementedException();
         }
 
-        public bool TryGetValue(T key, out U value)
+        public bool TryGetValue(TKey key, out TValue value)
         {
             throw new NotImplementedException();
         }
@@ -78,5 +122,37 @@ namespace HashMap
         {
             throw new NotImplementedException();
         }
+
+        private KeyValuePair<TKey, TValue> GetKeyValuePair(TKey key)
+        {
+            if (Collection[Index(key)] == null) throw new KeyNotFoundException($"Key {key} not found");
+
+            foreach (var pair in Collection[Index(key)])
+            {
+                if (Comparer.Equals(key, pair.Key))
+                {
+                    return pair;
+                }
+            }
+
+            throw new KeyNotFoundException($"Key {key} not found");
+        }
+
+        private int Index(TKey key)
+        {
+            return Index(key, Capacity);
+        }
+
+        private int Index(TKey key, int capacity)
+        {
+            return Math.Abs(Comparer.GetHashCode(key) % Capacity);
+        }
+
+        public bool ContainsKey(TKey key)
+        {
+            var pair = GetKeyValuePair(key);
+            return pair;
+        }
+
     }
 }
