@@ -70,7 +70,14 @@ namespace HashMap
         {
             var index = Index(key);
 
-            if (index == null) index = 4;
+            if (Collection[index] == null)
+            {
+                Collection[index] = new LinkedList<KeyValuePair<TKey, TValue>>();
+            }
+
+            Collection[index].AddLast(new KeyValuePair<TKey, TValue>(key, value));
+
+            Count++;
         }
 
         public void Add(KeyValuePair<TKey, TValue> item)
@@ -80,23 +87,29 @@ namespace HashMap
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            if (Count > 0)
+            {
+                Array.Clear(Collection, 0, Count);
+                Count = 0;
+            }
         }
 
         public bool Contains(KeyValuePair<TKey, TValue> item)
         {
-            throw new NotImplementedException();
+            var pair = GetKeyValuePair(item.Key);
+            if (pair.Value.Equals(item.Value))
+            {
+                return true;
+            }
+            return false;
         }
 
         public bool ContainsKey(TKey key)
         {
-            throw new NotImplementedException();
+            var pair = GetKeyValuePair(key);
+            return true;
         }
 
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-        {
-            throw new NotImplementedException();
-        }
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
@@ -105,12 +118,20 @@ namespace HashMap
 
         public bool Remove(TKey key)
         {
-            throw new NotImplementedException();
+            return Remove(GetKeyValuePair(key));
         }
 
         public bool Remove(KeyValuePair<TKey, TValue> item)
         {
-            throw new NotImplementedException();
+            var index = Index(item.Key);
+            foreach (var temp in Collection[index])
+            {
+                if (temp.Equals(item))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public bool TryGetValue(TKey key, out TValue value)
@@ -148,11 +169,9 @@ namespace HashMap
             return Math.Abs(Comparer.GetHashCode(key) % Capacity);
         }
 
-        public bool ContainsKey(TKey key)
+        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
-            var pair = GetKeyValuePair(key);
-            return pair;
+            Collection.CopyTo(array, arrayIndex);
         }
-
     }
 }
