@@ -52,7 +52,9 @@ namespace HashMap
             }
             set
             {
-
+                var pair = GetKeyValuePair(key);
+                Collection[Index(key)].Remove(pair);
+                Add(key, value);
             }
         }
 
@@ -113,7 +115,14 @@ namespace HashMap
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            throw new NotImplementedException();
+            foreach (var list in Collection)
+            {
+                if (list == null) continue;
+                foreach (var pair in list)
+                {
+                    yield return pair;
+                }
+            }
         }
 
         public bool Remove(TKey key)
@@ -136,12 +145,14 @@ namespace HashMap
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            throw new NotImplementedException();
+            var pair = GetKeyValuePair(key);
+            value = pair.Value;
+            return true;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return GetEnumerator();
         }
 
         private KeyValuePair<TKey, TValue> GetKeyValuePair(TKey key)
@@ -172,6 +183,25 @@ namespace HashMap
         void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             Collection.CopyTo(array, arrayIndex);
+        }
+
+        private void ReHash(int capacity)
+        {
+            var temp = new LinkedList<KeyValuePair<TKey, TValue>>[capacity];
+            foreach (var list in Collection)
+            {
+                if (list == null) continue;
+
+                foreach (var pair in list)
+                {
+                    var index = Index(pair.Key, capacity);
+                    if (temp[index] == null)
+                    {
+                        temp[index] = new LinkedList<KeyValuePair<TKey, TValue>>();
+                    }
+                    temp[index].AddLast(pair);
+                }
+            }
         }
     }
 }
